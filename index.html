@@ -4,32 +4,43 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>TempoChanger — Time-stretch & Speed Control (Single File)</title>
+  <title>TempoChanger — Knob UI (Single File)</title>
   <style>
-    :root{--bg:#0f1724;--card:#0b1220;--accent:#8b5cf6;--muted:#9aa4b2;--glass:rgba(255,255,255,0.04)}
-    html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial; background:linear-gradient(180deg,#071026 0%, #00121a 100%);color:#e6eef6}
-    .wrap{max-width:980px;margin:20px auto;padding:18px;box-shadow:0 6px 30px rgba(0,0,0,0.6);border-radius:14px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));}
-    header{display:flex;align-items:center;gap:12px}
-    h1{font-size:1.25rem;margin:0}
-    p.lead{margin:6px 0 14px;color:var(--muted);font-size:0.92rem}
-    .grid{display:grid;grid-template-columns:1fr;gap:12px}
-    @media(min-width:820px){.grid{grid-template-columns:380px 1fr}}.card{background:var(--card);padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.03)}
-.drop{display:flex;flex-direction:column;gap:8px;align-items:center;justify-content:center;padding:18px;border-radius:10px;background:var(--glass);border:1px dashed rgba(255,255,255,0.05);min-height:140px;text-align:center}
-.controls{display:flex;flex-direction:column;gap:8px}
-label{font-size:0.83rem;color:var(--muted)}
-input[type=file]{display:none}
-.btn{background:linear-gradient(90deg,var(--accent),#06b6d4);border:none;color:#fff;padding:10px 12px;border-radius:10px;font-weight:600;cursor:pointer}
-.btn.secondary{background:transparent;border:1px solid rgba(255,255,255,0.06)}
+    :root{--bg:#071026;--card:#071722;--accent:#7c3aed;--muted:#9aa4b2;--glass:rgba(255,255,255,0.03)}
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;background:linear-gradient(180deg,#00121a 0%, #031726 100%);color:#e6eef6}
+    .wrap{max-width:980px;margin:26px auto;padding:18px;border-radius:12px;background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);box-shadow:0 8px 32px rgba(2,6,23,0.6)}
+    header{display:flex;gap:12px;align-items:center}
+    h1{font-size:1.1rem;margin:0}
+    p.lead{margin:4px 0 0;color:var(--muted);font-size:0.92rem}
+    .grid{display:grid;grid-template-columns:1fr;gap:14px;margin-top:14px}
+    @media(min-width:900px){.grid{grid-template-columns:360px 1fr}}
+    .card{background:var(--card);padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.03)}/* Drop + controls */
+.drop{display:flex;flex-direction:column;gap:8px;align-items:center;justify-content:center;padding:16px;border-radius:10px;background:var(--glass);border:1px dashed rgba(255,255,255,0.04);min-height:120px;text-align:center}
 .row{display:flex;gap:8px;align-items:center}
-.slider{width:100%}
-.small{font-size:0.83rem;color:var(--muted)}
-.progress{height:8px;background:rgba(255,255,255,0.04);border-radius:999px;overflow:hidden}
-.progress > i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),#06b6d4);width:0%}
-canvas.wave{width:100%;height:80px;border-radius:8px;background:linear-gradient(180deg,rgba(255,255,255,0.01),transparent)}
-footer{margin-top:12px;color:var(--muted);font-size:0.85rem}
+input[type=file]{display:none}
+.btn{background:linear-gradient(90deg,var(--accent),#06b6d4);border:none;color:#fff;padding:8px 12px;border-radius:10px;font-weight:600;cursor:pointer}
+.btn.secondary{background:transparent;border:1px solid rgba(255,255,255,0.06)}
 .muted{color:var(--muted)}
-.info{font-size:0.92rem}
-.inline{display:inline-flex;gap:8px}
+.small{font-size:0.85rem;color:var(--muted)}
+
+/* Knob */
+.knob-wrap{display:flex;flex-direction:column;align-items:center;gap:8px;padding:10px}
+.knob{width:160px;height:160px;border-radius:999px;display:flex;align-items:center;justify-content:center;position:relative;touch-action:none}
+.knob-svg{position:absolute;left:0;top:0;width:100%;height:100%;transform:rotate(-90deg)}
+.knob-track{fill:none;stroke:rgba(255,255,255,0.04);stroke-width:10}
+.knob-arc{fill:none;stroke:var(--accent);stroke-width:10;stroke-linecap:round;transition:stroke-dashoffset 120ms linear}
+.knob-pointer{position:absolute;width:6px;height:46%;background:var(--accent);border-radius:4px;transform-origin:50% 90%;box-shadow:0 4px 10px rgba(0,0,0,0.6)}
+.knob-label{position:absolute;display:flex;flex-direction:column;align-items:center;gap:2px;pointer-events:none}
+.knob-label .value{font-size:1.05rem;font-weight:700}
+.knob-label .sub{font-size:0.78rem;color:var(--muted)}
+
+/* waveform */
+canvas.wave{width:100%;height:120px;border-radius:8px;background:linear-gradient(180deg,rgba(255,255,255,0.01),transparent)}
+
+footer{margin-top:10px;color:var(--muted);font-size:0.85rem}
+
+/* responsive small screens */
+@media(max-width:520px){.knob{width:140px;height:140px}}
 
   </style>
 </head>
@@ -37,490 +48,235 @@ footer{margin-top:12px;color:var(--muted);font-size:0.85rem}
   <div class="wrap">
     <header>
       <svg width="36" height="36" viewBox="0 0 24 24" fill="none" aria-hidden>
-        <rect x="1" y="1" width="22" height="22" rx="6" fill="#020617" stroke="rgba(255,255,255,0.04)"/>
-        <path d="M6 8v8l6-4-6-4z" fill="#8b5cf6"/>
+        <rect x="1" y="1" width="22" height="22" rx="5" fill="#020617" stroke="rgba(255,255,255,0.04)"/>
+        <path d="M6 8v8l6-4-6-4z" fill="var(--accent)"/>
       </svg>
       <div>
-        <h1>TempoChanger (single-file)</h1>
-        <p class="lead">Change tempo (speed) of MP3/WAV/OGG etc. — keep pitch using time-stretch (granular overlap-add) or change pitch with simple playback rate.</p>
+        <h1>TempoChanger — Knob UI</h1>
+        <p class="lead">Spin the knob to set tempo (50% — 200%). Drag, wheel or use keyboard arrows. Click to set, double-click to reset to 100%.</p>
       </div>
-    </header><div class="grid" style="margin-top:12px">
+    </header><div class="grid">
   <div class="card">
     <div class="drop" id="dropZone">
       <div style="font-weight:700">Drop audio file here or click to choose</div>
-      <div class="muted">Supports mp3, wav, ogg — works fully client-side.</div>
+      <div class="muted">mp3 / wav / ogg — processed locally in your browser.</div>
       <div class="row" style="margin-top:8px">
         <label class="btn" for="fileInput">Choose file</label>
         <input id="fileInput" type="file" accept="audio/*" />
-        <button id="exampleBtn" class="btn secondary">Load Example (demo)</button>
+        <button id="exampleBtn" class="btn secondary">Load Example</button>
       </div>
     </div>
 
-    <div style="margin-top:12px" id="fileInfo" class="muted">No file loaded.</div>
-
-    <hr style="border:none;height:1px;background:rgba(255,255,255,0.03);margin:12px 0" />
-
-    <div class="controls">
-      <div>
-        <label>Tempo (50% - 200%) <span id="tempoVal" style="float:right">100%</span></label>
-        <input id="tempo" class="slider" type="range" min="50" max="200" value="100">
-      </div>
-
-      <div>
-        <label>Algorithm</label>
-        <div class="row">
-          <label class="small inline"><input type="radio" name="alg" value="preserve" checked> Preserve pitch (time-stretch)</label>
-          <label class="small inline"><input type="radio" name="alg" value="rate"> Change pitch (playbackRate)</label>
+    <div style="display:flex;gap:12px;align-items:center;justify-content:space-between;margin-top:12px">
+      <div class="knob-wrap">
+        <div id="knob" class="knob" tabindex="0" role="slider" aria-label="Tempo knob" aria-valuemin="50" aria-valuemax="200" aria-valuenow="100">
+          <svg class="knob-svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid">
+            <circle class="knob-track" cx="50" cy="50" r="40"></circle>
+            <circle class="knob-arc" cx="50" cy="50" r="40" stroke-dasharray="251.2" stroke-dashoffset="0"></circle>
+          </svg>
+          <div id="pointer" class="knob-pointer" style="transform:rotate(0deg)"></div>
+          <div class="knob-label">
+            <div id="tempoDisplay" class="value">100%</div>
+            <div class="sub">Tempo</div>
+          </div>
         </div>
+        <div class="small muted" style="text-align:center;margin-top:6px">Use wheel / drag / keyboard</div>
       </div>
 
-      <div id="stretchOptions">
-        <label>Grain size (samples) <span id="grainVal" style="float:right">2048</span></label>
-        <input id="grainSize" class="slider" type="range" min="256" max="8192" value="2048" step="64">
+      <div style="flex:1;display:flex;flex-direction:column;gap:8px">
+        <div class="row" style="justify-content:flex-end">
+          <div id="fileInfo" class="muted">No file loaded.</div>
+        </div>
 
-        <label style="margin-top:8px">Overlap (0.1 - 0.9) <span id="overlapVal" style="float:right">0.5</span></label>
-        <input id="overlap" class="slider" type="range" min="10" max="90" value="50">
+        <div>
+          <label class="small">Algorithm</label>
+          <div class="row" style="margin-top:6px">
+            <label class="small inline" style="display:flex;align-items:center;gap:8px"><input type="radio" name="alg" value="preserve" checked> Preserve pitch</label>
+            <label class="small inline" style="display:flex;align-items:center;gap:8px"><input type="radio" name="alg" value="rate"> Change pitch</label>
+          </div>
+        </div>
 
-        <div class="small muted" style="margin-top:8px">Smaller grain size = more CPU and more artifacts on extremes. Tweak overlap for smoother results.</div>
-      </div>
+        <div style="display:flex;gap:8px;margin-top:6px">
+          <button id="processBtn" class="btn" style="flex:1">Process</button>
+          <button id="playOrig" class="btn secondary" style="flex:1">Play Original</button>
+        </div>
 
-      <div class="row" style="margin-top:10px">
-        <button id="processBtn" class="btn" style="flex:1">Process (Apply Tempo)</button>
-        <button id="playOrig" class="btn secondary" style="flex:1">Play Original</button>
-      </div>
+        <div style="display:flex;gap:8px;margin-top:6px">
+          <button id="playProc" class="btn" style="flex:1" disabled>Play Processed</button>
+          <button id="downloadBtn" class="btn secondary" style="flex:1" disabled>Download WAV</button>
+        </div>
 
-      <div class="row" style="margin-top:8px">
-        <button id="playProc" class="btn" style="flex:1" disabled>Play Processed</button>
-        <button id="downloadBtn" class="btn secondary" style="flex:1" disabled>Download WAV</button>
-      </div>
+        <div style="margin-top:6px">
+          <label class="small">Progress</label>
+          <div style="height:8px;background:rgba(255,255,255,0.03);border-radius:999px;overflow:hidden"><i id="progressBar" style="display:block;height:100%;background:linear-gradient(90deg,var(--accent),#06b6d4);width:0%"></i></div>
+        </div>
 
-      <div style="margin-top:10px">
-        <label>Progress</label>
-        <div class="progress"><i id="progressBar"></i></div>
+        <div style="margin-top:8px" class="small muted">Tip: For subtle changes (±15%) algorithm "Preserve pitch" gives best results.</div>
       </div>
     </div>
-
   </div>
 
   <div class="card">
-    <div style="display:flex;gap:8px;align-items:center;justify-content:space-between">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
       <div>
-        <div class="info" id="meta">Processed audio will appear here.</div>
-        <div class="muted" id="meta2">Use playback and download controls on the left.</div>
+        <div class="small muted" id="meta">Processed audio will appear here.</div>
       </div>
-      <div style="text-align:right">
-        <div class="muted">Quality tips</div>
-        <div class="muted" style="font-size:0.82rem;max-width:260px;text-align:right">For small adjustments (±15%) quality is good. For big changes, increase grain size and overlap but expect artifacts.</div>
-      </div>
+      <div class="small muted" style="text-align:right;max-width:260px">This is a compact, client-only demo — no uploads leave your device.</div>
     </div>
 
     <hr style="border:none;height:1px;background:rgba(255,255,255,0.03);margin:12px 0" />
-
     <canvas id="waveCanvas" class="wave">Your browser doesn't support canvas</canvas>
-
     <footer>
-      <div>Client-side only — no uploaded data leaves your device. Built with a granular overlap-add time-stretch implementation.</div>
+      <div class="muted">Granular overlap-add time-stretch for 'Preserve pitch', and simple resampling for 'Change pitch'.</div>
     </footer>
   </div>
 </div>
 
   </div>  <script>
-  // TempoChanger — single-file implementation.
-  // Time-stretch algorithm: windowed overlap-add (basic granular OLA with Hann window)
-  // Author: ChatGPT (implementation optimized for clarity and portability)
+  // Compact TempoChanger with rotary knob
+  (function(){
+    const MIN = 50, MAX = 200; // percent
+    const MIN_ANGLE = -135, MAX_ANGLE = 135; // degrees of active arc (clockwise positive because screen Y grows down)
 
-  let audioCtx = null;
-  let originalBuffer = null;
-  let processedBuffer = null;
-  let sourceNode = null;
-  let playing = false;
-  let playingProcessed = false;
-  let currentSource = null;
+    let audioCtx = null, originalBuffer = null, processedBuffer = null, currentSource = null;
 
-  const $ = id => document.getElementById(id);
-  const fileInput = $('fileInput');
-  const dropZone = $('dropZone');
-  const fileInfo = $('fileInfo');
-  const tempoSlider = $('tempo');
-  const tempoVal = $('tempoVal');
-  const processBtn = $('processBtn');
-  const playOrigBtn = $('playOrig');
-  const playProcBtn = $('playProc');
-  const downloadBtn = $('downloadBtn');
-  const progressBar = $('progressBar');
-  const grainSlider = $('grainSize');
-  const grainVal = $('grainVal');
-  const overlapSlider = $('overlap');
-  const overlapVal = $('overlapVal');
-  const waveCanvas = $('waveCanvas');
-  const meta = $('meta');
+    const $ = id => document.getElementById(id);
+    const fileInput = $('fileInput');
+    const dropZone = $('dropZone');
+    const fileInfo = $('fileInfo');
+    const processBtn = $('processBtn');
+    const playOrigBtn = $('playOrig');
+    const playProcBtn = $('playProc');
+    const downloadBtn = $('downloadBtn');
+    const progressBar = $('progressBar');
+    const knob = $('knob');
+    const pointer = $('pointer');
+    const arc = document.querySelector('.knob-arc');
+    const tempoDisplay = $('tempoDisplay');
+    const waveCanvas = $('waveCanvas');
+    const meta = $('meta');
 
-  tempoSlider.addEventListener('input', ()=>{ tempoVal.textContent = tempoSlider.value + '%'; });
-  grainSlider.addEventListener('input', ()=>{ grainVal.textContent = grainSlider.value; });
-  overlapSlider.addEventListener('input', ()=>{ overlapVal.textContent = (overlapSlider.value/100).toFixed(2); });
+    // helpers
+    function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
+    function angleForValue(v){ const ratio = (v - MIN) / (MAX - MIN); return MIN_ANGLE + ratio * (MAX_ANGLE - MIN_ANGLE); }
+    function valueForAngle(a){ const ratio = (a - MIN_ANGLE) / (MAX_ANGLE - MIN_ANGLE); return Math.round(MIN + ratio * (MAX - MIN)); }
 
-  // algorithm selection toggle
-  document.querySelectorAll('input[name="alg"]').forEach(r=>r.addEventListener('change', (e)=>{
-    const preserve = document.querySelector('input[name="alg"][value="preserve"]').checked;
-    $('stretchOptions').style.display = preserve ? 'block':'none';
-  }));
+    // set knob visuals
+    function setTempoUI(value){ value = clamp(Math.round(value), MIN, MAX); const angle = angleForValue(value); pointer.style.transform = `rotate(${angle}deg)`; // circle arc stroke
+      const r = 40; const circumference = 2*Math.PI*r; const ratio = (value - MIN)/(MAX - MIN); const dash = circumference * ratio; arc.style.strokeDasharray = `${circumference}`; arc.style.strokeDashoffset = `${circumference - dash}`; tempoDisplay.textContent = value + '%'; knob.setAttribute('aria-valuenow', value); knob._value = value; }
 
-  // Drag & drop
-  ['dragenter','dragover'].forEach(ev=>dropZone.addEventListener(ev, e=>{e.preventDefault();dropZone.style.borderColor='rgba(139,92,246,0.6)'}));
-  ['dragleave','drop'].forEach(ev=>dropZone.addEventListener(ev, e=>{e.preventDefault();dropZone.style.borderColor='rgba(255,255,255,0.05)'}));
-  dropZone.addEventListener('drop', async (e)=>{ e.preventDefault(); if(e.dataTransfer.files && e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); });
+    // initialize
+    setTempoUI(100);
 
-  fileInput.addEventListener('change', ()=>{ if(fileInput.files && fileInput.files[0]) handleFile(fileInput.files[0]); });
+    // pointer events for knob (pointer capture)
+    knob.addEventListener('pointerdown', (ev)=>{
+      knob.setPointerCapture(ev.pointerId);
+      onPointerMove(ev);
+      function move(e){ onPointerMove(e); }
+      function up(e){ knob.releasePointerCapture(ev.pointerId); window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); }
+      window.addEventListener('pointermove', move);
+      window.addEventListener('pointerup', up);
+    });
 
-  // Example demo audio (small embedded base64 clip) - short sine wave demo to avoid remote fetch.
-  $('exampleBtn').addEventListener('click', async ()=>{
-    // generate a short demo tone programmatically
-    const ctx = new (window.OfflineAudioContext || window.AudioContext)(1, 44100*2, 44100);
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = 'sawtooth'; osc.frequency.value = 220;
-    gain.gain.value = 0.2;
-    osc.connect(gain); gain.connect(ctx.destination);
-    osc.start(0); osc.stop(1.8);
-    const rendered = await ctx.startRendering();
-    // convert to WAV bytes and then load
-    const wav = audioBufferToWavBlob(rendered);
-    const file = new File([wav], 'demo.wav', {type:'audio/wav'});
-    handleFile(file);
-  });
-
-  async function ensureAudioContext(){
-    if(!audioCtx){
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function onPointerMove(ev){
+      const rect = knob.getBoundingClientRect(); const cx = rect.left + rect.width/2; const cy = rect.top + rect.height/2; const dx = ev.clientX - cx; const dy = ev.clientY - cy; let ang = Math.atan2(dy, dx) * 180/Math.PI; // -180..180
+      // normalize to -180..180 then clamp
+      if(ang < MIN_ANGLE) ang = MIN_ANGLE; if(ang > MAX_ANGLE) ang = MAX_ANGLE; const v = valueForAngle(ang); setTempoUI(v);
     }
-    // resume if suspended (user gesture might be required to start audio on some browsers)
-    if(audioCtx.state === 'suspended'){
-      try{ await audioCtx.resume(); }catch(e){/*ignore*/}
-    }
-  }
 
-  async function handleFile(file){
-    progress(0);
-    fileInfo.textContent = `Loading ${file.name} ...`;
-    const array = await file.arrayBuffer();
-    try{
-      await ensureAudioContext();
-      originalBuffer = await audioCtx.decodeAudioData(array.slice(0));
-    }catch(err){
-      // fallback: try a temporary AudioContext if decode fails
+    // wheel and keyboard
+    knob.addEventListener('wheel', (e)=>{ e.preventDefault(); const step = e.shiftKey ? 10 : (e.deltaY>0 ? -1 : 1); setTempoUI((knob._value||100) + step); });
+    knob.addEventListener('keydown', (e)=>{
+      if(e.key === 'ArrowLeft' || e.key === 'ArrowDown'){ setTempoUI((knob._value||100) - (e.shiftKey?10:1)); e.preventDefault(); }
+      if(e.key === 'ArrowRight' || e.key === 'ArrowUp'){ setTempoUI((knob._value||100) + (e.shiftKey?10:1)); e.preventDefault(); }
+      if(e.key === 'Home'){ setTempoUI(MIN); }
+      if(e.key === 'End'){ setTempoUI(MAX); }
+      if(e.key === 'Enter'){ processBtn.focus(); }
+    });
+    knob.addEventListener('dblclick', ()=> setTempoUI(100));
+
+    // drag & drop + file input
+    ['dragenter','dragover'].forEach(ev=>dropZone.addEventListener(ev, e=>{ e.preventDefault(); dropZone.style.borderColor='rgba(124,58,237,0.6)'; }));
+    ['dragleave','drop'].forEach(ev=>dropZone.addEventListener(ev, e=>{ e.preventDefault(); dropZone.style.borderColor='rgba(255,255,255,0.04)'; }));
+    dropZone.addEventListener('drop', async (e)=>{ e.preventDefault(); if(e.dataTransfer.files && e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); });
+    fileInput.addEventListener('change', ()=>{ if(fileInput.files && fileInput.files[0]) handleFile(fileInput.files[0]); });
+
+    // example tone
+    $('exampleBtn').addEventListener('click', async ()=>{
+      await ensureAudioContext(); const ctx = new (window.OfflineAudioContext || window.AudioContext)(1, 44100*2, 44100); const osc = ctx.createOscillator(); const g = ctx.createGain(); osc.type='sine'; osc.frequency.value=220; g.gain.value=0.2; osc.connect(g); g.connect(ctx.destination); osc.start(); osc.stop(1.8); const rendered = await ctx.startRendering(); const wav = audioBufferToWavBlob(rendered); const file = new File([wav],'demo.wav',{type:'audio/wav'}); handleFile(file);
+    });
+
+    async function ensureAudioContext(){ if(!audioCtx){ audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } if(audioCtx.state === 'suspended'){ try{ await audioCtx.resume(); }catch(e){} } }
+
+    async function handleFile(file){ progress(0); fileInfo.textContent = `Loading ${file.name} ...`; const array = await file.arrayBuffer(); try{ await ensureAudioContext(); originalBuffer = await audioCtx.decodeAudioData(array.slice(0)); }catch(err){ try{ const tmp = new (window.AudioContext || window.webkitAudioContext)(); originalBuffer = await tmp.decodeAudioData(array.slice(0)); }catch(e){ fileInfo.textContent = 'Error decoding audio file.'; console.error(e); return; } }
+      fileInfo.innerHTML = `<strong>${file.name}</strong> — ${formatTime(originalBuffer.duration)} — ${originalBuffer.numberOfChannels}ch @ ${originalBuffer.sampleRate}Hz`; meta.textContent = `Ready — ${formatTime(originalBuffer.duration)}`; processedBuffer = null; playProcBtn.disabled = true; downloadBtn.disabled = true; drawWaveform(originalBuffer); progress(100);
+    }
+
+    function formatTime(sec){ const s = Math.floor(sec%60).toString().padStart(2,'0'); const m = Math.floor(sec/60).toString(); return `${m}:${s}`; }
+
+    // Process & playback
+    processBtn.addEventListener('click', async ()=>{
+      if(!originalBuffer){ alert('Load file first'); return; }
+      const alg = document.querySelector('input[name="alg"]:checked').value; const tempoPct = knob._value || 100; const tempo = tempoPct / 100; progress(0); processBtn.disabled = true; processBtn.textContent = 'Processing...'; meta.textContent = 'Processing...';
       try{
-        const tmp = new (window.AudioContext || window.webkitAudioContext)();
-        originalBuffer = await tmp.decodeAudioData(array.slice(0));
-      }catch(e){
-        fileInfo.textContent = 'Error decoding audio file. Unsupported format?';
-        console.error(e);
-        return;
-      }
-    }
-
-    fileInfo.innerHTML = `<strong>${file.name}</strong> — ${formatTime(originalBuffer.duration)} — ${originalBuffer.numberOfChannels}ch @ ${originalBuffer.sampleRate} Hz`;
-    meta.textContent = `Ready. Duration: ${formatTime(originalBuffer.duration)} — Channels: ${originalBuffer.numberOfChannels} — Sample rate: ${originalBuffer.sampleRate} Hz`;
-    processedBuffer = null; playProcBtn.disabled = true; downloadBtn.disabled = true; drawWaveform(originalBuffer);
-  }
-
-  function formatTime(sec){
-    const s = Math.floor(sec%60).toString().padStart(2,'0');
-    const m = Math.floor(sec/60).toString();
-    return `${m}:${s}`;
-  }
-
-  // PROCESS button
-  processBtn.addEventListener('click', async ()=>{
-    if(!originalBuffer){ alert('Load an audio file first'); return; }
-    const alg = document.querySelector('input[name="alg"]:checked').value;
-    const tempo = Number(tempoSlider.value)/100;
-    if(alg === 'rate'){
-      // simple playback rate change: just resample when playing or create processedBuffer via resampling
-      // We'll resample into a new AudioBuffer by offline rendering for download/playback convenience
-      progress(0);
-      meta.textContent = 'Applying simple playback-rate speed change...';
-      await ensureAudioContext();
-      processedBuffer = await resampleBuffer(originalBuffer, tempo);
-      progress(100);
-      meta.textContent = `Done — processed duration: ${formatTime(processedBuffer.duration)}`;
-      playProcBtn.disabled = false; downloadBtn.disabled = false; drawWaveform(processedBuffer);
-      return;
-    }
-
-    // preserve pitch via our OLA time-stretch
-    const grainSize = Number(grainSlider.value) | 2048;
-    const overlap = Number(overlapSlider.value)/100;
-    progress(0);
-    processBtn.disabled = true; processBtn.textContent = 'Processing...';
-    meta.textContent = 'Time-stretching (this runs client-side).';
-    try{
-      processedBuffer = await timeStretchAudioBuffer(originalBuffer, tempo, grainSize, overlap, (p)=>{ progress(p); });
-      playProcBtn.disabled = false; downloadBtn.disabled = false;
-      meta.textContent = `Done — processed duration: ${formatTime(processedBuffer.duration)}`;
-      drawWaveform(processedBuffer);
-    }catch(e){
-      console.error(e); alert('Processing failed: '+e.message);
-    }finally{
-      processBtn.disabled = false; processBtn.textContent = 'Process (Apply Tempo)';
-      progress(100);
-    }
-  });
-
-  // Playback controls
-  playOrigBtn.addEventListener('click', async ()=>{
-    if(!originalBuffer){ alert('Load an audio file first'); return; }
-    await ensureAudioContext();
-    stopAll();
-    const src = audioCtx.createBufferSource(); src.buffer = originalBuffer; src.connect(audioCtx.destination);
-    src.start(); currentSource = src; playing = true;
-    src.onended = ()=>{ playing=false; currentSource=null; };
-  });
-
-  playProcBtn.addEventListener('click', async ()=>{
-    if(!processedBuffer){ alert('No processed audio yet'); return; }
-    await ensureAudioContext();
-    stopAll();
-    const src = audioCtx.createBufferSource(); src.buffer = processedBuffer; src.connect(audioCtx.destination);
-    src.start(); currentSource = src; playingProcessed = true;
-    src.onended = ()=>{ playingProcessed=false; currentSource=null; };
-  });
-
-  function stopAll(){ if(currentSource){ try{ currentSource.stop(); }catch(e){} currentSource=null; }; playing=false; playingProcessed=false; }
-
-  downloadBtn.addEventListener('click', ()=>{
-    if(!processedBuffer){ alert('No processed audio yet'); return; }
-    const blob = audioBufferToWavBlob(processedBuffer);
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url; a.download = 'processed.wav'; a.click(); URL.revokeObjectURL(url);
-  });
-
-  // Simple resampling via OfflineAudioContext to change playbackRate (affects pitch)
-  async function resampleBuffer(buffer, speed){
-    // new length = original.duration / speed
-    const targetLength = Math.ceil(buffer.length / speed);
-    const offline = new (window.OfflineAudioContext || window.AudioContext)(buffer.numberOfChannels, targetLength, buffer.sampleRate);
-    const src = offline.createBufferSource();
-    src.buffer = buffer;
-    src.playbackRate.value = speed; // >1 plays faster (shorter duration)
-    src.connect(offline.destination);
-    src.start(0);
-    const rendered = await offline.startRendering();
-    return rendered;
-  }
-
-  // Time-stretch with overlap-add using Hann window
-  async function timeStretchAudioBuffer(inBuffer, tempo, grainSize, overlap, onProgress){
-    // tempo: multiplier (1.0 = original, 1.2 = 20% faster, 0.8 = 20% slower)
-    // grainSize: in samples
-    // overlap: 0..0.95 -> portion overlapped
-
-    if(tempo <= 0) throw new Error('Tempo must be positive');
-    const channels = inBuffer.numberOfChannels;
-    const sampleRate = inBuffer.sampleRate;
-    const inLen = inBuffer.length;
-
-    // clamp grain size
-    grainSize = Math.max(256, Math.min(8192, Math.floor(grainSize)));
-    const overlapRatio = Math.max(0.05, Math.min(0.95, overlap));
-
-    // analysis hop (Ha) and synthesis hop (Hs)
-    const Ha = Math.max(1, Math.round(grainSize * (1 - overlapRatio)));
-    const stretch = 1 / tempo; // stretch factor: >1 slows down, <1 speeds up
-    const Hs = Math.max(1, Math.round(Ha * stretch));
-
-    // number of grains
-    const nGrains = Math.max(1, Math.floor((inLen - grainSize) / Ha) + 1);
-
-    // estimate out length
-    const estimatedOutLen = (nGrains - 1) * Hs + grainSize;
-
-    // prepare window (Hann)
-    const window = new Float32Array(grainSize);
-    for(let n=0;n<grainSize;n++){
-      window[n] = 0.5 * (1 - Math.cos(2*Math.PI*n/(grainSize-1)));
-    }
-
-    // allocate output and weight arrays per channel
-    const out = [];
-    const weight = new Float32Array(estimatedOutLen);
-    for(let ch=0; ch<channels; ch++){
-      out[ch] = new Float32Array(estimatedOutLen);
-    }
-
-    // process grains; to keep UI responsive, occasionally yield control.
-    const yieldEvery = 32; // grains
-    for(let g=0; g<nGrains; g++){
-      const inPos = g * Ha;
-      const outPos = g * Hs;
-      // for each channel
-      for(let ch=0; ch<channels; ch++){
-        const inData = inBuffer.getChannelData(ch);
-        const outData = out[ch];
-        for(let n=0; n<grainSize; n++){
-          const inIndex = inPos + n;
-          if(inIndex >= inLen) break;
-          const sample = inData[inIndex] * window[n];
-          const dstIndex = outPos + n;
-          if(dstIndex < estimatedOutLen){ outData[dstIndex] += sample; }
+        if(alg === 'rate'){
+          processedBuffer = await resampleBuffer(originalBuffer, tempo);
+        } else {
+          processedBuffer = await timeStretchAudioBuffer(originalBuffer, tempo, 2048, 0.5, (p)=>progress(p));
         }
-      }
-      // accumulate window weights for normalization
-      for(let n=0; n<grainSize; n++){
-        const dstIndex = outPos + n;
-        if(dstIndex < estimatedOutLen){ weight[dstIndex] += window[n]; }
-      }
+        playProcBtn.disabled = false; downloadBtn.disabled = false; meta.textContent = `Done — ${formatTime(processedBuffer.duration)}`; drawWaveform(processedBuffer);
+      }catch(e){ console.error(e); alert('Processing failed: '+ (e && e.message || e)); }
+      finally{ processBtn.disabled = false; processBtn.textContent = 'Process'; progress(100); }
+    });
 
-      // progress callback
-      if(onProgress && (g % Math.max(1, Math.floor(nGrains/100)) === 0)){
-        onProgress(Math.round((g / nGrains) * 90));
+    playOrigBtn.addEventListener('click', async ()=>{ if(!originalBuffer){ alert('No file'); return; } await ensureAudioContext(); stopAll(); const src = audioCtx.createBufferSource(); src.buffer = originalBuffer; src.connect(audioCtx.destination); src.start(); currentSource = src; src.onended = ()=>{ currentSource = null; }; });
+    playProcBtn.addEventListener('click', async ()=>{ if(!processedBuffer){ alert('No processed audio'); return; } await ensureAudioContext(); stopAll(); const src = audioCtx.createBufferSource(); src.buffer = processedBuffer; src.connect(audioCtx.destination); src.start(); currentSource = src; src.onended = ()=>{ currentSource = null; }; });
+    function stopAll(){ if(currentSource){ try{ currentSource.stop(); }catch(e){} currentSource=null; } }
+
+    downloadBtn.addEventListener('click', ()=>{ if(!processedBuffer){ alert('Nothing to download'); return; } const blob = audioBufferToWavBlob(processedBuffer); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'processed.wav'; a.click(); URL.revokeObjectURL(url); });
+
+    // Resample via OfflineAudioContext
+    async function resampleBuffer(buffer, speed){ const targetLength = Math.ceil(buffer.length / speed); const offline = new (window.OfflineAudioContext || window.AudioContext)(buffer.numberOfChannels, targetLength, buffer.sampleRate); const src = offline.createBufferSource(); src.buffer = buffer; src.playbackRate.value = speed; src.connect(offline.destination); src.start(0); const rendered = await offline.startRendering(); return rendered; }
+
+    // Time-stretch (OLA with Hann window) - simplified & robust
+    async function timeStretchAudioBuffer(inBuffer, tempo, grainSize, overlap, onProgress){ if(tempo <=0) throw new Error('Tempo must be positive'); const channels = inBuffer.numberOfChannels; const sampleRate = inBuffer.sampleRate; const inLen = inBuffer.length; grainSize = Math.max(256, Math.min(8192, Math.floor(grainSize))); const overlapRatio = Math.max(0.05, Math.min(0.95, overlap)); const Ha = Math.max(1, Math.round(grainSize * (1 - overlapRatio))); const stretch = 1 / tempo; const Hs = Math.max(1, Math.round(Ha * stretch)); const nGrains = Math.max(1, Math.floor((inLen - grainSize) / Ha) + 1); const estimatedOutLen = (nGrains - 1) * Hs + grainSize; const window = new Float32Array(grainSize); for(let n=0;n<grainSize;n++){ window[n] = 0.5 * (1 - Math.cos(2*Math.PI*n/(grainSize-1))); }
+      const out = []; const weight = new Float32Array(estimatedOutLen);
+      for(let ch=0; ch<channels; ch++){ out[ch] = new Float32Array(estimatedOutLen); }
+      const yieldEvery = 32;
+      for(let g=0; g<nGrains; g++){
+        const inPos = g * Ha; const outPos = g * Hs;
+        for(let ch=0; ch<channels; ch++){
+          const inData = inBuffer.getChannelData(ch); const outData = out[ch]; for(let n=0; n<grainSize; n++){ const inIndex = inPos + n; if(inIndex >= inLen) break; const sample = inData[inIndex] * window[n]; const dstIndex = outPos + n; if(dstIndex < estimatedOutLen) outData[dstIndex] += sample; }
+        }
+        for(let n=0;n<grainSize;n++){ const dstIndex = outPos + n; if(dstIndex < estimatedOutLen) weight[dstIndex] += window[n]; }
+        if(onProgress && (g % Math.max(1, Math.floor(nGrains/100)) === 0)){ onProgress(Math.round((g / nGrains) * 90)); }
+        if(g % yieldEvery === 0) await new Promise(r=>setTimeout(r,0));
       }
-      if(g % yieldEvery === 0){
-        await new Promise(r => setTimeout(r, 0));
-      }
+      // normalize
+      for(let ch=0; ch<channels; ch++){ const outData = out[ch]; for(let i=0;i<estimatedOutLen;i++){ const w = weight[i]; if(w > 1e-8) outData[i] = outData[i] / w; } }
+      // create final buffer
+      await ensureAudioContext(); const finalBuffer = audioCtx.createBuffer(channels, estimatedOutLen, sampleRate);
+      for(let ch=0; ch<channels; ch++) finalBuffer.copyToChannel(out[ch], ch, 0);
+      if(onProgress) onProgress(100);
+      return finalBuffer;
     }
 
-    // normalize by weight
-    for(let ch=0; ch<channels; ch++){
-      const outData = out[ch];
-      for(let i=0;i<estimatedOutLen;i++){
-        const w = weight[i];
-        if(w > 1e-8){ outData[i] = outData[i] / w; }
-      }
+    function progress(pct){ progressBar.style.width = pct + '%'; }
+
+    // Waveform draw (mono mix)
+    function drawWaveform(buffer){ try{ const canvas = waveCanvas; const w = canvas.width = Math.min(1600, Math.floor(canvas.clientWidth * devicePixelRatio)); const h = canvas.height = Math.max(80, Math.floor(canvas.clientHeight * devicePixelRatio)); const ctx = canvas.getContext('2d'); ctx.clearRect(0,0,w,h); ctx.fillStyle = 'rgba(255,255,255,0.02)'; ctx.fillRect(0,0,w,h); const data = mixToMono(buffer); const step = Math.ceil(data.length / w); ctx.lineWidth = 1 * devicePixelRatio; ctx.strokeStyle = 'rgba(124,58,237,0.92)'; ctx.beginPath(); for(let i=0;i<w;i++){ const start = i*step; let min=1,max=-1; for(let j=0;j<step && (start+j)<data.length;j++){ const v = data[start+j]; if(v<min) min=v; if(v>max) max=v; } const y1 = (1-(min+1)/2)*h; const y2 = (1-(max+1)/2)*h; ctx.moveTo(i, y1); ctx.lineTo(i, y2); } ctx.stroke(); }catch(e){ console.warn(e); }
     }
 
-    // create AudioBuffer of exact length
-    const finalBuffer = audioCtx.createBuffer(channels, estimatedOutLen, sampleRate);
-    for(let ch=0; ch<channels; ch++){
-      finalBuffer.copyToChannel(out[ch], ch, 0);
+    function mixToMono(buffer){ const ch = buffer.numberOfChannels; const len = buffer.length; const out = new Float32Array(len); if(ch===1){ out.set(buffer.getChannelData(0)); return out; } for(let i=0;i<len;i++){ let s=0; for(let c=0;c<ch;c++) s += buffer.getChannelData(c)[i]; out[i] = s/ch; } return out; }
+
+    // WAV export (16-bit PCM)
+    function audioBufferToWavBlob(buffer){ const numChannels = buffer.numberOfChannels; const sampleRate = buffer.sampleRate; const format = 1; const bitsPerSample = 16; const bytesPerSample = bitsPerSample/8; const blockAlign = numChannels * bytesPerSample; const dataSize = buffer.length * blockAlign; const bufferLength = 44 + dataSize; const view = new DataView(new ArrayBuffer(bufferLength)); let offset = 0; function writeString(s){ for(let i=0;i<s.length;i++){ view.setUint8(offset++, s.charCodeAt(i)); } }
+      writeString('RIFF'); view.setUint32(offset, 36 + dataSize, true); offset += 4; writeString('WAVE'); writeString('fmt '); view.setUint32(offset, 16, true); offset += 4; view.setUint16(offset, format, true); offset += 2; view.setUint16(offset, numChannels, true); offset += 2; view.setUint32(offset, sampleRate, true); offset += 4; view.setUint32(offset, sampleRate * blockAlign, true); offset += 4; view.setUint16(offset, blockAlign, true); offset += 2; view.setUint16(offset, bitsPerSample, true); offset += 2; writeString('data'); view.setUint32(offset, dataSize, true); offset += 4;
+      // write interleaved PCM
+      const channelData = []; for(let c=0;c<numChannels;c++) channelData.push(buffer.getChannelData(c)); let ptr = offset; for(let i=0;i<buffer.length;i++){ for(let c=0;c<numChannels;c++){ let sample = Math.max(-1, Math.min(1, channelData[c][i])); sample = sample < 0 ? sample * 0x8000 : sample * 0x7FFF; view.setInt16(ptr, sample, true); ptr += 2; } }
+      return new Blob([view], {type: 'audio/wav'});
     }
 
-    if(onProgress) onProgress(100);
-    return finalBuffer;
-  }
-
-  function progress(pct){ progressBar.style.width = pct + '%'; }
-
-  // waveform drawing (simple downmix and draw)
-  function drawWaveform(buffer){
-    const canvas = waveCanvas; const w = canvas.width = Math.min(1000, canvas.clientWidth * devicePixelRatio);
-    const h = canvas.height = Math.max(80, canvas.clientHeight * devicePixelRatio);
-    const ctx = canvas.getContext('2d'); ctx.clearRect(0,0,w,h);
-    ctx.fillStyle = 'rgba(255,255,255,0.02)'; ctx.fillRect(0,0,w,h);
-    const data = mixToMono(buffer);
-    const step = Math.ceil(data.length / w);
-    ctx.lineWidth = 1 * devicePixelRatio; ctx.strokeStyle = 'rgba(140,92,246,0.9)'; ctx.beginPath();
-    for(let i=0;i<w;i++){
-      const start = i*step; let min=1,max=-1;
-      for(let j=0;j<step && (start+j)<data.length;j++){ const v = data[start+j]; if(v<min) min=v; if(v>max) max=v; }
-      const y1 = (1-(min+1)/2)*h; const y2 = (1-(max+1)/2)*h;
-      ctx.moveTo(i, y1); ctx.lineTo(i, y2);
-    }
-    ctx.stroke();
-  }
-
-  function mixToMono(buffer){
-    const ch = buffer.numberOfChannels; const len = buffer.length; const out = new Float32Array(len);
-    if(ch===1){ out.set(buffer.getChannelData(0)); return out; }
-    const ch0 = buffer.getChannelData(0);
-    for(let i=0;i<len;i++){ let s=0; for(let c=0;c<ch;c++) s+=buffer.getChannelData(c)[i]; out[i]=s/ch; }
-    return out;
-  }
-
-  // WAV encoder (Float32 -> 16-bit PCM)
-  function audioBufferToWavBlob(buffer){
-    const numChannels = buffer.numberOfChannels;
-    const sampleRate = buffer.sampleRate;
-    const format = 1; // PCM
-
-    // interleave
-    const length = buffer.length * numChannels * 2; // 16-bit
-    const header = 44;
-    const bufferLength = header + buffer.length * numChannels * 2;
-    const view = new DataView(new ArrayBuffer(bufferLength));
-
-    // write WAV header
-    let offset = 0;
-    writeString(view, offset, 'RIFF'); offset += 4;
-    view.setUint32(offset, 36 + buffer.length * numChannels * 2, true); offset += 4;
-    writeString(view, offset, 'WAVE'); offset += 4;
-    writeString(view, offset, 'fmt '); offset += 4;
-    view.setUint32(offset, 16, true); offset += 4; // subchunk1Size
-    view.setUint16(offset, format, true); offset += 2; // audio format
-    view.setUint16(offset, numChannels, true); offset += 2;
-    view.setUint32(offset, sampleRate, true); offset += 4;
-    view.setUint32(offset, sampleRate * numChannels * 2, true); offset += 4; // byteRate
-    view.setUint16(offset, numChannels * 2, true); offset += 2; // blockAlign
-    view.setUint16(offset, 16, true); offset += 2; // bitsPerSample
-    writeString(view, offset, 'data'); offset += 4;
-    view.setUint32(offset, buffer.length * numChannels * 2, true); offset += 4;
-
-    // write interleaved PCM samples
-    const tmp = new Float32Array(buffer.length * numChannels);
-    // interleave
-    for(let i=0;i<buffer.length;i++){
-      for(let ch=0; ch<numChannels; ch++){
-        tmp[i*numChannels + ch] = buffer.getChannelData(ch)[i];
-      }
-    }
-    // convert to 16-bit
-    let pos = header;
-    for(let i=0;i<tmp.length;i++){
-      let sample = tmp[i];
-      // clamp
-      sample = Math.max(-1, Math.min(1, sample));
-      view.setInt16(pos, sample < 0 ? sample * 0x8000 : sample * 0x7FFF, true);
-      pos += 2;
-    }
-
-    return new Blob([view.buffer], { type: 'audio/wav' });
-  }
-
-  function writeString(view, offset, string){ for(let i=0;i<string.length;i++){ view.setUint8(offset+i, string.charCodeAt(i)); } }
-
-  // helper to convert OfflineAudioContext output to Blob (used by example generator)
-  function audioBufferToWavBlob_sync(buffer){ return audioBufferToWavBlob(buffer); }
-
-  function audioBufferToWavBlob_fromArray(buffer){ return audioBufferToWavBlob(buffer); }
-
-  // fallback small wrapper for demo tone
-  function audioBufferToWavBlob(buffer){ return audioBufferToWavBlobBlob(buffer); }
-
-  // we duplicated and renamed to keep clarity in code above, now define final used function
-  function audioBufferToWavBlobBlob(buffer){
-    // same as audioBufferToWavBlob defined earlier — to avoid hoisting confusion we call the main implementation above
-    const numChannels = buffer.numberOfChannels;
-    const sampleRate = buffer.sampleRate;
-    const header = 44;
-    const bufferLength = header + buffer.length * numChannels * 2;
-    const view = new DataView(new ArrayBuffer(bufferLength));
-    let offset = 0;
-    writeString(view, offset, 'RIFF'); offset += 4;
-    view.setUint32(offset, 36 + buffer.length * numChannels * 2, true); offset += 4;
-    writeString(view, offset, 'WAVE'); offset += 4;
-    writeString(view, offset, 'fmt '); offset += 4;
-    view.setUint32(offset, 16, true); offset += 4;
-    view.setUint16(offset, 1, true); offset += 2;
-    view.setUint16(offset, numChannels, true); offset += 2;
-    view.setUint32(offset, sampleRate, true); offset += 4;
-    view.setUint32(offset, sampleRate * numChannels * 2, true); offset += 4;
-    view.setUint16(offset, numChannels * 2, true); offset += 2;
-    view.setUint16(offset, 16, true); offset += 2;
-    writeString(view, offset, 'data'); offset += 4;
-    view.setUint32(offset, buffer.length * numChannels * 2, true); offset += 4;
-
-    // interleave and write
-    for(let i=0;i<buffer.length;i++){
-      for(let ch=0; ch<numChannels; ch++){
-        let sample = buffer.getChannelData(ch)[i];
-        sample = Math.max(-1, Math.min(1, sample));
-        view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7FFF, true);
-        offset += 2;
-      }
-    }
-    return new Blob([view.buffer], {type:'audio/wav'});
-  }
-
-  // resize canvas on window resize
-  window.addEventListener('resize', ()=>{ if(originalBuffer) drawWaveform(originalBuffer); if(processedBuffer) drawWaveform(processedBuffer); });
+  })();
   </script></body>
 </html>
